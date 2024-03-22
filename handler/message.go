@@ -2,10 +2,12 @@ package handler
 
 import (
 	"TuruBot/pkg/turuapi"
+	"TuruBot/pkg/util"
 	"context"
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"go.mau.fi/whatsmeow"
 	waProto "go.mau.fi/whatsmeow/binary/proto"
@@ -35,16 +37,36 @@ func (cli *MyClient) myEventHandler(evt interface{}) {
 			if !v.IsEdit && v.Info.Edit == "" {
 				// go func for enhanced performance!
 				go func () {
-					var msgType string = v.Info.Type
+					var (
+						msgType, messageContent, command string
+					)
+					var (
+						isQuotedImage, isImage bool
+					)
 					var _ bool = v.Info.IsGroup // original => isGroup
-					var messageContent string
-					var command string
 					var chat = v.Info.Chat
+					var _ = v.Info.Sender.String() // original => sender
+					msgType = v.Info.Type
+					extended := v.Message.GetExtendedTextMessage()
+					quotedMsg := extended.GetContextInfo().GetQuotedMessage()
+					quotedImage := quotedMsg.GetImageMessage()
+					msgImage := v.Message.GetImageMessage()
+
+					if quotedImage != nil {
+						isQuotedImage = true
+					}
+					if msgImage != nil {
+						isImage = true
+					}
 
 					if extendedMessageText := v.Message.GetExtendedTextMessage().GetText(); extendedMessageText != "" {
 						messageContent = extendedMessageText
+					} else if textConversation := v.Message.GetConversation(); textConversation != "" {
+						messageContent = textConversation
+					} else if imageConversation := v.Message.ImageMessage.GetCaption(); imageConversation != "" {
+						messageContent = imageConversation
 					} else {
-						messageContent = v.Message.GetConversation()
+						messageContent = ""
 					}
 
 					// log
@@ -52,7 +74,7 @@ func (cli *MyClient) myEventHandler(evt interface{}) {
 					log.Printf("[CHAT] => %s", messageContent)
 
 					// generate message ID
-					var messageID string = client.GenerateMessageID()
+					var messageID string = v.Info.ID
 
 					if len(messageContent) > 0 {
 						input := strings.Split(messageContent, " ")
@@ -66,6 +88,56 @@ func (cli *MyClient) myEventHandler(evt interface{}) {
 					}
 	
 					switch (command) {
+						case "stiker", "sticker", "s":
+							fmt.Println("isImage?", isImage)
+							fmt.Println("isQuotedImage?", isQuotedImage)
+							var ImageData *waProto.ImageMessage
+							if isImage {
+								ImageData = msgImage
+							} else if isQuotedImage {
+								ImageData = quotedImage
+							} else {
+								ImageData = nil
+							}
+							
+							if ImageData != nil {
+								data, err := client.Download(ImageData)
+								if err != nil {
+									client.SendMessage(context.Background(), chat, &waProto.Message{
+										Conversation: proto.String("error bang!"),
+									})
+								}
+
+								convert,  err := util.WebpWriteExifData(data, time.Now().Unix())
+								if err != nil {
+									log.Println(err)
+								}
+
+								upload, err := client.Upload(context.Background(), convert, whatsmeow.MediaImage)
+								if err != nil {
+									client.SendMessage(context.Background(), chat, &waProto.Message{
+										Conversation: proto.String("error bang!"),
+									})
+								}
+
+								client.SendMessage(context.Background(), chat, &waProto.Message{
+									StickerMessage: &waProto.StickerMessage{
+										Url:               &upload.URL,
+										FileSha256:        upload.FileSHA256,
+										FileEncSha256:     upload.FileEncSHA256,
+										MediaKey:          upload.MediaKey,
+										Mimetype:          proto.String("image/webp"),
+										DirectPath:        &upload.DirectPath,
+										FileLength:        proto.Uint64(uint64(len(convert))),
+										FirstFrameSidecar: convert,
+										PngThumbnail:      convert,
+									},
+								})
+							} else {
+								client.SendMessage(context.Background(), chat, &waProto.Message{
+									Conversation: proto.String("kirim/reply gambar dengan caption !stiker"),
+								})
+							}
 						case "menu":
 							client.SendMessage(context.Background(), chat, &waProto.Message{
 								Conversation: proto.String("gada menunya anjing!"),
