@@ -1,8 +1,10 @@
 package util
 
 import (
+	"errors"
 	"io/ioutil"
 	"net/http"
+	"strings"
 )
 
 // fungsi untuk mendapatkan bytes images
@@ -24,6 +26,11 @@ func GetImageBytes(url string) ([]byte, string, error) {
 
 	// Mendeteksi MIME type dari response body
 	mimeType := http.DetectContentType(imageBytes)
+
+	// Memeriksa apakah MIME type termasuk kategori gambar
+	if !strings.HasPrefix(mimeType, "image/") {
+		return nil, "", errors.New("response bukan berupa gambar")
+	}
 
 	return imageBytes, mimeType, nil
 }
