@@ -239,7 +239,6 @@ func EventHandler(sock *whatsmeow.Client, msg *events.Message) {
 						return
 					}
 				case "menu":
-					fmt.Println(msgtemplate.Menu())
 					bot.Reply(msgtemplate.Menu())
 				case "stiker", "sticker", "s":
 					if ImageData == nil {

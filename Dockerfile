@@ -1,6 +1,6 @@
 FROM golang:alpine
 
-RUN apk update && apk add --no-cache git ffmpeg
+RUN apk update && apk add --no-cache git ffmpeg gcc musl-dev
 
 WORKDIR /app
 

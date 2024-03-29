@@ -18,5 +18,5 @@ func Menu() (string) {
 		output.WriteString(fmt.Sprintf("   Private Allowed? %t\n\n", cmd.AllowPrivate))
 	}
 
-	return fmt.Sprintf("*TuruBot v2024 Menu 🚀*\n\n" + output.String() + "_Powered by n0paleon_ [https://instagram.com/nopaleon.real]")
+	return fmt.Sprintf("*TuruBot v2024 Menu 🚀*\n\nBot Prefix: [All Unique Symbols]\n\n" + output.String() + "_Powered by n0paleon_ [https://instagram.com/nopaleon.real]")
 }
