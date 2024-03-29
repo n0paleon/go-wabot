@@ -9,12 +9,15 @@ import (
 	"os/signal"
 	"syscall"
 
-	//_ "github.com/jackc/pgx/v4/stdlib" // <= pgsql driver pake ini
+	// _ "github.com/jackc/pgx/v4/stdlib" // <= pgsql driver pake ini
 	"github.com/mdp/qrterminal"
 	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/store/sqlstore"
+	"go.mau.fi/whatsmeow/types/events"
 	waLog "go.mau.fi/whatsmeow/util/log"
-	_ "modernc.org/sqlite"
+
+	//_ "modernc.org/sqlite"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 
@@ -23,8 +26,9 @@ func main() {
 
 	// testing config
 	// jangan lupa ubah pake pgsql kalo udah production
-	sessionName :=  fmt.Sprintf("%s.sqlite?_pragma=foreign_keys=1&_journal_mode=WAL", configs.GetEnv("SESSION_NAME")) // fmt.Sprintf("postgresql://%s:%s@%s/%s", configs.GetEnv("DB_USER"), configs.GetEnv("DB_PASS"), configs.GetEnv("DB_HOST"), configs.GetEnv("DB_NAME"))
-	container, err := sqlstore.New("sqlite", sessionName, dbLog)
+	// sessionName :=  fmt.Sprintf("postgresql://%s:%s@%s/%s", configs.GetEnv("DB_USER"), configs.GetEnv("DB_PASS"), configs.GetEnv("DB_HOST"), configs.GetEnv("DB_NAME"))
+	sessionName := fmt.Sprintf("%s.sqlite?_pragma=foreign_keys=1&_journal_mode=WAL", configs.GetEnv("SESSION_NAME"))
+	container, err := sqlstore.New("sqlite3", sessionName, dbLog)
 	if err != nil {
 		panic(err)
 	}
@@ -33,13 +37,12 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	container.Upgrade()
 	clientLog := waLog.Stdout("Client", "INFO", true)
 	client := whatsmeow.NewClient(deviceStore, clientLog)
 
-	myClient := handler.MyClient{
-		WAClient: client,
-	}
-	myClient.Register()
+	eventHandler := registerHandler(client)
+   	client.AddEventHandler(eventHandler)
 
 
 	if client.Store.ID == nil {
@@ -71,4 +74,15 @@ func main() {
 	<-c
 
 	client.Disconnect()
+}
+
+func registerHandler(client *whatsmeow.Client) func(evt interface {}) {
+	return func(evt interface {}) {
+	    switch v := evt.(type) {
+		   	case *events.Message:
+			  	go handler.EventHandler(client, v)
+			default:
+				return
+	    }
+	}
 }

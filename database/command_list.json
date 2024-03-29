@@ -1,0 +1,94 @@
+[
+     {
+          "name": "List Bot Menu",
+          "cmd": "menu",
+          "alias": [
+               "menu"
+          ],
+          "allowGroup": true,
+          "allowPrivate": true
+     },
+     {
+          "name": "Sticker Maker",
+          "cmd": "sticker",
+          "alias": [
+               "sticker",
+               "stiker",
+               "s"
+          ],
+          "allowGroup": true,
+          "allowPrivate": true
+     },
+     {
+          "name": "Animated Sticker (support video)",
+          "cmd": "stickergif",
+          "alias": [
+               "stickergif",
+               "stikergif",
+               "sgif"
+          ],
+          "allowGroup": true,
+          "allowPrivate": true
+     },
+     {
+          "name": "Screenshot Website",
+          "cmd": "ssweb",
+          "alias": [
+               "ssweb",
+               "screenshotweb"
+          ],
+          "allowGroup": true,
+          "allowPrivate": true
+     },
+     {
+          "name": "Random Porn (18+) Image",
+          "cmd": "randomporn",
+          "alias": [
+               "randomporn",
+               "rporn",
+               "randombokep",
+               "rbokep"
+          ],
+          "allowGroup": false,
+          "allowPrivate": true
+     },
+     {
+          "name": "Random Anime (NSFW/18+) Image",
+          "cmd": "nsfw",
+          "alias": [
+               "nsfw",
+               "rnsfw"
+          ],
+          "allowGroup": false,
+          "allowPrivate": true
+     },
+     {
+          "name": "Random Anime (SFW) Image",
+          "cmd": "nsfw",
+          "alias": [
+               "sfw",
+               "rsfw"
+          ],
+          "allowGroup": true,
+          "allowPrivate": true
+     },
+     {
+          "name": "Set Group CMD Permission",
+          "cmd": "setgroupcmd",
+          "alias": [
+               "setgroupcmd"
+          ],
+          "allowGroup": true,
+          "allowPrivate": true
+     },
+     {
+          "name": "Set DM/Private Chat CMD Permission",
+          "cmd": "setdmcmd",
+          "alias": [
+               "setdmcmd",
+               "setprivatecmd"
+          ],
+          "allowGroup": true,
+          "allowPrivate": true
+     }
+]
